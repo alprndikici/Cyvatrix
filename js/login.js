@@ -42,10 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       message.textContent =
-        `Welcome back, ${data.user.name}! Login successful.`;
+        `Welcome back, ${data.user.name}! Redirecting to dashboard...`;
+
       message.style.color = "#22c55e";
 
       form.reset();
+
+      setTimeout(() => {
+        window.location.replace("dashboard.html");
+      }, 1000);
 
     } catch (error) {
       console.error("Login error:", error);

@@ -1,0 +1,124 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Cyvatrix | Dashboard</title>
+
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="js/dashboard.js" defer></script>
+
+  <style>
+    .dashboard-main {
+      max-width: 900px;
+      margin: 70px auto;
+      padding: 0 24px;
+    }
+
+    .dashboard-card {
+      background: #141c2e;
+      color: #fff;
+      border: 1px solid #29364f;
+      border-radius: 16px;
+      padding: 32px;
+      margin-top: 24px;
+    }
+
+    .dashboard-card h2 {
+      margin-bottom: 20px;
+    }
+
+    .user-detail {
+      margin: 14px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .user-detail strong {
+      color: #9ca3af;
+    }
+
+    #logout-button {
+      margin-top: 20px;
+    }
+
+    #dashboard-status {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="site-shell">
+
+    <header class="site-header">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="" width="36" height="36">
+        <span>Cyvatrix</span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Home</a>
+        <button id="logout-button"
+                class="btn btn-primary"
+                type="button"
+                hidden>
+          Logout
+        </button>
+      </nav>
+    </header>
+
+    <main class="dashboard-main">
+
+      <h1>Cyvatrix Dashboard</h1>
+      <p class="subtitle">
+        Your cybersecurity learning journey starts here.
+      </p>
+
+      <p id="dashboard-status" role="status" aria-live="polite">
+        Verifying your session...
+      </p>
+
+      <section id="dashboard-content" hidden>
+
+        <div class="dashboard-card">
+          <h2 id="welcome-message">Welcome!</h2>
+
+          <div class="user-detail">
+            <strong>Username:</strong>
+            <span id="user-name"></span>
+          </div>
+
+          <div class="user-detail">
+            <strong>Email:</strong>
+            <span id="user-email"></span>
+          </div>
+
+          <div class="user-detail">
+            <strong>Account ID:</strong>
+            <span id="user-id"></span>
+          </div>
+
+          <div class="user-detail">
+            <strong>Session Status:</strong>
+            <span>Authenticated</span>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h2>Cybersecurity Learning Center</h2>
+          <p>
+            Security awareness modules and quizzes
+            will be available here soon.
+          </p>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>
