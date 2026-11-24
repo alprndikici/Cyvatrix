@@ -15,6 +15,7 @@ const routes = {
   "/css/style.css": "css/style.css",
   "/js/script.js": "js/script.js",
   "/js/register.js": "js/register.js",
+  "/js/login.js": "js/login.js",
   "/assets/logo.svg": "assets/logo.svg"
 };
 
