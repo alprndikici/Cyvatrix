@@ -102,6 +102,68 @@ async function startServer() {
       }
     });
 
+    // LOGIN API
+    app.post("/api/login", async (req, res) => {
+      try {
+        const { email, password } = req.body || {};
+
+        // Validate input
+        if (
+          typeof email !== "string" ||
+          typeof password !== "string" ||
+          !email.trim() ||
+          !password
+        ) {
+          return res.status(400).json({
+            message: "Email and password are required."
+          });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        // Find user in MongoDB
+        const user = await users.findOne({
+          email: cleanEmail
+        });
+
+        // Use a generic message for invalid credentials
+        if (!user) {
+          return res.status(401).json({
+            message: "Invalid email or password."
+          });
+        }
+
+        // Verify password against stored bcrypt hash
+        const passwordMatches = await bcrypt.compare(
+          password,
+          user.passwordHash
+        );
+
+        if (!passwordMatches) {
+          return res.status(401).json({
+            message: "Invalid email or password."
+          });
+        }
+
+        // Successful login
+        return res.status(200).json({
+          message: "Login successful!",
+          user: {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email
+          }
+        });
+
+      } catch (error) {
+        console.error("Login error:", error);
+
+        return res.status(500).json({
+          message: "Internal server error."
+        });
+      }
+    });
+
     app.listen(PORT, HOST, () => {
       console.log(`Cyvatrix Backend running on port ${PORT}`);
     });
