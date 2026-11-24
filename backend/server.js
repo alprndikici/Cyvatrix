@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 
 const app = express();
@@ -28,6 +29,10 @@ const client = new MongoClient(uri, {
 
 async function startServer() {
   try {
+    if (!/^[a-f0-9]{64}$/.test(process.env.JWT_SECRET || "")) {
+      throw new Error("JWT_SECRET is missing or invalid.");
+    }
+
     await client.connect();
 
     const db = client.db(dbName);
@@ -145,7 +150,28 @@ async function startServer() {
           });
         }
 
-        // Successful login
+        
+        // Generate JWT after successful authentication.
+        const token = jwt.sign(
+          { sub: user._id.toString() },
+          process.env.JWT_SECRET,
+          {
+            algorithm: "HS256",
+            expiresIn: "1h",
+            issuer: "cyvatrix",
+            audience: "cyvatrix-web"
+          }
+        );
+
+        // Store JWT in an HttpOnly cookie.
+        res.cookie("cyvatrix_session", token, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: false,
+          maxAge: 60 * 60 * 1000,
+          path: "/api"
+        });
+
         return res.status(200).json({
           message: "Login successful!",
           user: {
@@ -155,6 +181,7 @@ async function startServer() {
           }
         });
 
+
       } catch (error) {
         console.error("Login error:", error);
 
@@ -162,6 +189,104 @@ async function startServer() {
           message: "Internal server error."
         });
       }
+    });
+
+    // Middleware: verify the JWT session cookie.
+    async function requireAuth(req, res, next) {
+      try {
+        const cookieHeader = req.headers.cookie || "";
+
+        const sessionCookie = cookieHeader
+          .split(";")
+          .map(item => item.trim())
+          .find(item => item.startsWith("cyvatrix_session="));
+
+        if (!sessionCookie) {
+          return res.status(401).json({
+            message: "Authentication required."
+          });
+        }
+
+        const token = sessionCookie.slice(
+          "cyvatrix_session=".length
+        );
+
+        const decoded = jwt.verify(
+          token,
+          process.env.JWT_SECRET,
+          {
+            algorithms: ["HS256"],
+            issuer: "cyvatrix",
+            audience: "cyvatrix-web"
+          }
+        );
+
+        if (
+          typeof decoded.sub !== "string" ||
+          !/^[a-f0-9]{24}$/i.test(decoded.sub)
+        ) {
+          return res.status(401).json({
+            message: "Invalid session."
+          });
+        }
+
+        const { ObjectId } = require("mongodb");
+
+        const user = await users.findOne({
+          _id: new ObjectId(decoded.sub)
+        });
+
+        if (!user) {
+          return res.status(401).json({
+            message: "User not found."
+          });
+        }
+
+        req.user = user;
+        next();
+
+      } catch (error) {
+        if (
+          error.name === "JsonWebTokenError" ||
+          error.name === "TokenExpiredError" ||
+          error.name === "NotBeforeError"
+        ) {
+          return res.status(401).json({
+            message: "Invalid or expired session."
+          });
+        }
+
+        console.error("Authentication error:", error);
+        return res.status(500).json({
+          message: "Internal server error."
+        });
+      }
+    }
+
+    // Protected endpoint
+    app.get("/api/me", requireAuth, (req, res) => {
+      res.status(200).json({
+        authenticated: true,
+        user: {
+          id: req.user._id.toString(),
+          name: req.user.name,
+          email: req.user.email
+        }
+      });
+    });
+
+    // Logout endpoint
+    app.post("/api/logout", (req, res) => {
+      res.clearCookie("cyvatrix_session", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        path: "/api"
+      });
+
+      res.json({
+        message: "Logout successful!"
+      });
     });
 
     app.listen(PORT, HOST, () => {
