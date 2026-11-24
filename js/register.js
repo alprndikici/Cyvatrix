@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        "http://192.168.145.128:5000/api/register",
+        "/api/register",
         {
           method: "POST",
           headers: {
