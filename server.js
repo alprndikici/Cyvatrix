@@ -12,8 +12,10 @@ const routes = {
   "/register.html": "register.html",
   "/css/style.css": "css/style.css",
   "/js/script.js": "js/script.js",
+  "/js/register.js": "js/register.js",
   "/assets/logo.svg": "assets/logo.svg"
 };
+
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
